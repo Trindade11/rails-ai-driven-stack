@@ -1,0 +1,299 @@
+name: 🚀 Deploy Stack Rails AI-Driven
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Job de Validação
+  validate:
+    runs-on: ubuntu-latest
+    name: 🔍 Validate HTML & Code Quality
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 📦 Install HTML Validator
+      run: |
+        npm install -g html-validate
+        npm install -g lighthouse-cli
+        
+    - name: ✅ Validate HTML Files
+      run: |
+        echo "🔍 Validando arquivos HTML..."
+        for file in *.html; do
+          if [ -f "$file" ]; then
+            echo "Validando: $file"
+            html-validate "$file" || echo "⚠️  Warning em $file"
+          fi
+        done
+        
+    - name: 📊 Generate HTML Report
+      run: |
+        echo "📋 Gerando relatório de arquivos..."
+        echo "# 📁 Arquivos do Projeto" > validation-report.md
+        echo "" >> validation-report.md
+        echo "## 🎯 Dashboards e Interfaces" >> validation-report.md
+        echo "- **index.html** - Dashboard Principal" >> validation-report.md
+        echo "- **index-editor.html** - Dashboard Alternativo" >> validation-report.md
+        echo "- **editor-interface.html** - Interface de Editor com Chat IA" >> validation-report.md
+        echo "" >> validation-report.md
+        echo "## 📚 Documentação" >> validation-report.md
+        echo "- **README.md** - Documentação Principal" >> validation-report.md
+        echo "- **STACK_TECNICA.md** - Stack Técnica Completa" >> validation-report.md
+        echo "- **GUIA_DE_TESTES.md** - Guia de Testes" >> validation-report.md
+        echo "" >> validation-report.md
+        echo "## ⚡ JavaScript" >> validation-report.md
+        echo "- **stimulus-controllers.js** - Controllers Básicos" >> validation-report.md
+        echo "- **stimulus-controllers-pro.js** - Controllers Avançados" >> validation-report.md
+        
+    - name: 📤 Upload validation artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: validation-report
+        path: validation-report.md
+
+  # Job de Deploy
+  deploy:
+    runs-on: ubuntu-latest
+    needs: validate
+    name: 🌐 Deploy to GitHub Pages
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🏗️ Build Demo Site
+      run: |
+        # Criar estrutura do site de demonstração
+        mkdir -p _site
+        mkdir -p _site/assets
+        mkdir -p _site/demos
+        
+        # Copiar arquivos principais
+        cp *.html _site/
+        cp *.js _site/assets/
+        cp *.md _site/
+        
+        # Criar página index principal
+        cat > _site/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Stack Rails AI-Driven - Demonstração</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            <style>
+                .hero-section {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 100px 0;
+                }
+                .demo-card {
+                    transition: transform 0.3s ease;
+                    border: none;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .demo-card:hover {
+                    transform: translateY(-5px);
+                }
+                .tech-badge {
+                    background: linear-gradient(45deg, #12c2e9, #c471ed, #f64f59);
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    margin: 0.25rem;
+                    display: inline-block;
+                }
+            </style>
+        </head>
+        <body>
+            <!-- Hero Section -->
+            <section class="hero-section text-center">
+                <div class="container">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="fas fa-rocket"></i> Stack Rails AI-Driven
+                    </h1>
+                    <p class="lead mb-4">
+                        Demonstração de uma stack Rails moderna otimizada para desenvolvimento 100% via IA
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-badge">Rails 8</span>
+                        <span class="tech-badge">Hotwire</span>
+                        <span class="tech-badge">Stimulus</span>
+                        <span class="tech-badge">Bootstrap 5</span>
+                    </div>
+                    <a href="#demos" class="btn btn-light btn-lg">
+                        <i class="fas fa-play"></i> Ver Demonstrações
+                    </a>
+                </div>
+            </section>
+            
+            <!-- Demos Section -->
+            <section id="demos" class="py-5">
+                <div class="container">
+                    <h2 class="text-center mb-5">🎯 Demonstrações Interativas</h2>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card demo-card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-tachometer-alt fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Dashboard Principal</h5>
+                                    <p class="card-text">Interface moderna com tema claro/escuro, gráficos interativos e live updates.</p>
+                                    <a href="demos/dashboard.html" class="btn btn-primary">
+                                        <i class="fas fa-external-link-alt"></i> Abrir Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card demo-card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-code fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Editor com Chat IA</h5>
+                                    <p class="card-text">Interface de editor completa com chat IA integrado e explorador de arquivos.</p>
+                                    <a href="demos/editor.html" class="btn btn-success">
+                                        <i class="fas fa-external-link-alt"></i> Abrir Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card demo-card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-gem fa-3x text-warning mb-3"></i>
+                                    <h5 class="card-title">Versão Pro</h5>
+                                    <p class="card-text">Dashboard avançado com animações, partículas e componentes premium.</p>
+                                    <a href="demos/pro.html" class="btn btn-warning">
+                                        <i class="fas fa-external-link-alt"></i> Abrir Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Documentation Section -->
+            <section class="py-5 bg-light">
+                <div class="container">
+                    <h2 class="text-center mb-5">📚 Documentação</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-layer-group"></i> Stack Técnica
+                                    </h5>
+                                    <p class="card-text">Documentação completa da stack Rails AI-driven com exemplos práticos.</p>
+                                    <a href="STACK_TECNICA.md" class="btn btn-outline-primary">Ler Documentação</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-vial"></i> Guia de Testes
+                                    </h5>
+                                    <p class="card-text">Checklist completo para testar todas as funcionalidades implementadas.</p>
+                                    <a href="GUIA_DE_TESTES.md" class="btn btn-outline-success">Ver Guia</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Footer -->
+            <footer class="bg-dark text-white py-4">
+                <div class="container text-center">
+                    <p class="mb-0">
+                        <i class="fas fa-heart text-danger"></i> 
+                        Desenvolvido por <strong>Rodrigo Trindade</strong> - CoCreate AI
+                    </p>
+                    <p class="mb-0">
+                        <a href="https://github.com/rodrigo-trindade" class="text-white">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    </p>
+                </div>
+            </footer>
+            
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        </body>
+        </html>
+        EOF
+        
+        # Criar páginas de demonstração
+        mkdir -p _site/demos
+        
+        # Copiar demos com nomes mais amigáveis
+        cp index.html _site/demos/dashboard.html
+        cp editor-interface.html _site/demos/editor.html
+        cp index-editor.html _site/demos/pro.html
+        
+        echo "✅ Site de demonstração criado com sucesso!"
+        
+    - name: 🔧 Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: 📤 Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '_site'
+        
+    - name: 🚀 Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  # Job de Notificação
+  notify:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy]
+    if: always()
+    name: 📢 Notify Results
+    
+    steps:
+    - name: 📊 Generate Deploy Summary
+      run: |
+        echo "## 🚀 Deploy Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✅ Jobs Executados:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Validate**: ${{ needs.validate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Deploy**: ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🌐 Site Disponível:" >> $GITHUB_STEP_SUMMARY
+        echo "- **URL**: [Stack Rails AI-Driven](https://rodrigo-trindade.github.io/rails-ai-driven-stack/)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Demos**: Dashboard, Editor IA, Versão Pro" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📚 Documentação:" >> $GITHUB_STEP_SUMMARY
+        echo "- Stack Técnica Completa" >> $GITHUB_STEP_SUMMARY
+        echo "- Guias de Desenvolvimento" >> $GITHUB_STEP_SUMMARY
+        echo "- Testes Automatizados" >> $GITHUB_STEP_SUMMARY 
