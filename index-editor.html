@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rails Studio - Editor de Projetos</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Monaco Editor (VS Code Editor) -->
+    <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1e73be;
+            --secondary-color: #f8f9fa;
+            --sidebar-bg: #ffffff;
+            --editor-bg: #ffffff;
+            --border-color: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--secondary-color);
+        }
+        
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .app-header {
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 60px;
+        }
+        
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .app-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Main Content */
+        .app-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .app-sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-section {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .module-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .module-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .module-item.active {
+            background-color: #e7f3ff;
+            color: var(--primary-color);
+        }
+        
+        .module-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .status-available {
+            background-color: #d1edff;
+            color: var(--primary-color);
+        }
+        
+        .status-soon {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        /* File Explorer */
+        .file-explorer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .file-tree {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 0.1rem;
+        }
+        
+        .file-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .file-item.active {
+            background-color: #e7f3ff;
+            color: var(--primary-color);
+        }
+        
+        .file-icon {
+            width: 16px;
+            text-align: center;
+        }
+        
+        /* Editor Area */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--editor-bg);
+            overflow: hidden;
+        }
+        
+        .editor-header {
+            background: var(--editor-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .file-tabs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .file-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .file-tab.active {
+            background: white;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .editor-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-editor {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: white;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-editor:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background: #1557a0;
+        }
+        
+        /* Editor Content */
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .code-editor {
+            flex: 1;
+            position: relative;
+            background: white;
+        }
+        
+        .editor-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        #monaco-editor {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Chat Panel */
+        .chat-panel {
+            width: 350px;
+            background: white;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: #f8f9fa;
+        }
+        
+        .chat-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chat-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .message-ai {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+        }
+        
+        .message-user {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            margin-left: 2rem;
+        }
+        
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .chat-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            resize: none;
+            font-size: 0.9rem;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(30, 115, 190, 0.1);
+        }
+        
+        /* Status Indicators */
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online {
+            background-color: var(--success-color);
+        }
+        
+        .status-warning {
+            background-color: var(--warning-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .chat-panel {
+                width: 300px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .app-sidebar {
+                width: 250px;
+            }
+            
+            .chat-panel {
+                display: none;
+            }
+        }
+        
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="app-logo">
+                    <i class="bi bi-code-square"></i>
+                    <span>Rails Studio</span>
+                </a>
+                <div class="app-title">
+                    Editando: projeto_rails_moderno.rb
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="user-info">
+                    Bem-vindo, demo@businesside.com
+                </div>
+                <button class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-gear"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Sidebar -->
+            <aside class="app-sidebar">
+                <!-- Modules Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Módulos do Programa</div>
+                    
+                    <div class="module-item active" data-controller="module" data-action="click->module#select">
+                        <span>Dashboard de Maturidade</span>
+                        <span class="module-status status-available">Disponível</span>
+                    </div>
+                    
+                    <div class="module-item" data-controller="module" data-action="click->module#select">
+                        <span>Rails Generator</span>
+                        <span class="module-status status-available">Disponível</span>
+                    </div>
+                    
+                    <div class="module-item" data-controller="module" data-action="click->module#select">
+                        <span>Stimulus Hub</span>
+                        <span class="module-status status-soon">Em Breve</span>
+                    </div>
+                    
+                    <div class="module-item" data-controller="module" data-action="click->module#select">
+                        <span>Deploy Automático</span>
+                        <span class="module-status status-soon">Em Breve</span>
+                    </div>
+                </div>
+                
+                <!-- File Explorer -->
+                <div class="file-explorer">
+                    <div class="sidebar-title">
+                        <i class="bi bi-folder2-open me-2"></i>
+                        Explorador de Arquivos
+                    </div>
+                    
+                    <ul class="file-tree">
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-folder file-icon"></i>
+                            <span>app/</span>
+                        </li>
+                        <li class="file-item active" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-file-earmark-code file-icon"></i>
+                            <span>projeto_rails_moderno.rb</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-folder file-icon"></i>
+                            <span>controllers/</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-file-earmark file-icon"></i>
+                            <span>dashboard_controller.rb</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-folder file-icon"></i>
+                            <span>views/</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-file-earmark file-icon"></i>
+                            <span>index.html.erb</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-folder file-icon"></i>
+                            <span>stimulus/</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-file-earmark-code file-icon"></i>
+                            <span>theme_controller.js</span>
+                        </li>
+                        <li class="file-item" data-controller="file" data-action="click->file#open">
+                            <i class="bi bi-file-earmark-code file-icon"></i>
+                            <span>chart_controller.js</span>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+            
+            <!-- Editor Container -->
+            <div class="editor-container">
+                <!-- Editor Header -->
+                <div class="editor-header">
+                    <div class="file-tabs">
+                        <div class="file-tab active">
+                            <i class="bi bi-file-earmark-code"></i>
+                            <span>projeto_rails_moderno.rb</span>
+                            <i class="bi bi-x-lg ms-2" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                        </div>
+                        <div class="file-tab">
+                            <i class="bi bi-file-earmark"></i>
+                            <span>dashboard.html.erb</span>
+                            <i class="bi bi-x-lg ms-2" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-actions">
+                        <button class="btn-editor" data-controller="editor" data-action="click->editor#format">
+                            <i class="bi bi-code"></i>
+                            Formatar
+                        </button>
+                        <button class="btn-editor btn-primary" data-controller="editor" data-action="click->editor#save">
+                            <i class="bi bi-floppy"></i>
+                            Salvar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Editor Content -->
+                <div class="editor-content">
+                    <div class="code-editor">
+                        <div id="monaco-editor"></div>
+                        <div class="editor-placeholder" id="editor-placeholder">
+                            <i class="bi bi-file-earmark-code" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p>Selecione um arquivo para começar a editar</p>
+                            <button class="btn btn-primary" data-controller="editor" data-action="click->editor#newFile">
+                                <i class="bi bi-plus"></i> Novo Arquivo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Panel -->
+            <aside class="chat-panel">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <i class="bi bi-robot me-2"></i>
+                        Chat IA
+                    </div>
+                    <div class="chat-subtitle">
+                        <span class="status-indicator status-online"></span>
+                        Assistente especializado em Rails
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-message message-ai">
+                        <strong>RailsGPT:</strong><br>
+                        Olá! Sou seu assistente especializado em Rails. Como posso ajudar com seu projeto hoje?
+                    </div>
+                    
+                    <div class="chat-message message-user">
+                        Como posso criar um controller com Stimulus?
+                    </div>
+                    
+                    <div class="chat-message message-ai">
+                        <strong>RailsGPT:</strong><br>
+                        Para criar um controller Stimulus:<br><br>
+                        1. Crie o arquivo: <code>app/javascript/controllers/exemplo_controller.js</code><br>
+                        2. Use a sintaxe: <code>data-controller="exemplo"</code><br>
+                        3. Adicione actions: <code>data-action="click->exemplo#metodo"</code><br><br>
+                        Quer que eu gere um exemplo completo?
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <textarea 
+                        class="chat-input" 
+                        placeholder="Digite sua mensagem ou @agente..."
+                        rows="3"
+                        data-controller="chat"
+                        data-action="keydown->chat#handleKeydown"
+                    ></textarea>
+                    <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Digite @ para mencionar agentes • ⌘/Ctrl + S para salvar</small>
+                        <button class="btn btn-sm btn-primary" data-controller="chat" data-action="click->chat#send">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Monaco Editor Setup -->
+    <script>
+        // Initialize Monaco Editor
+        require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
+        
+        let editor;
+        
+        require(['vs/editor/editor.main'], function () {
+            const placeholder = document.getElementById('editor-placeholder');
+            const editorContainer = document.getElementById('monaco-editor');
+            
+            // Hide placeholder initially
+            placeholder.style.display = 'flex';
+            editorContainer.style.display = 'none';
+            
+            // Sample Rails code
+            const railsCode = `# Rails Moderno - Dashboard Controller
+class DashboardController < ApplicationController
+  before_action :authenticate_user!
+  
+  def index
+    @users_count = User.count
+    @conversion_rate = calculate_conversion_rate
+    @revenue = calculate_monthly_revenue
+    @response_time = system_response_time
+    
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
+  end
+  
+  def analytics
+    @chart_data = {
+      labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+      datasets: [{
+        label: 'Usuários Ativos',
+        data: generate_user_data,
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)'
+      }]
+    }
+    
+    render turbo_stream: turbo_stream.replace(
+      'chart-container', 
+      partial: 'analytics/chart', 
+      locals: { data: @chart_data }
+    )
+  end
+  
+  private
+  
+  def calculate_conversion_rate
+    # Lógica de conversão com Rails
+    orders = Order.where(created_at: 1.month.ago..Time.current)
+    visitors = Visitor.where(created_at: 1.month.ago..Time.current)
+    
+    return 0 if visitors.count.zero?
+    (orders.count.to_f / visitors.count * 100).round(2)
+  end
+  
+  def generate_user_data
+    # Stimulus + Turbo integration
+    7.times.map { |i| 
+      User.where(
+        created_at: i.days.ago.beginning_of_day..i.days.ago.end_of_day
+      ).count 
+    }.reverse
+  end
+end`;
+            
+            // Create editor with Rails syntax
+            editor = monaco.editor.create(editorContainer, {
+                value: railsCode,
+                language: 'ruby',
+                theme: 'vs',
+                fontSize: 14,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                minimap: { enabled: false },
+                wordWrap: 'on'
+            });
+        });
+        
+        // File opening simulation
+        function openFile(filename) {
+            const placeholder = document.getElementById('editor-placeholder');
+            const editorContainer = document.getElementById('monaco-editor');
+            
+            placeholder.style.display = 'none';
+            editorContainer.style.display = 'block';
+            
+            if (editor) {
+                editor.layout();
+            }
+        }
+    </script>
+    
+    <!-- Stimulus-like Controllers -->
+    <script src="editor-controllers.js"></script>
+</body>
+</html> 
