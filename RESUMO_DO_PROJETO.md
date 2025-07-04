@@ -2,7 +2,7 @@
 
 ## 🎯 **Visão Geral**
 
-Este projeto é um **protótipo funcional completo** que demonstra uma stack Rails moderna otimizada para desenvolvimento 100% via IA. O objetivo é apresentar uma alternativa produtiva e elegante às stacks complexas de frontend, focando em simplicidade, produtividade e compatibilidade total com ferramentas de inteligência artificial.
+Este projeto é um **protótipo funcional completo** que demonstra uma stack Rails moderna com **TailwindCSS** otimizada para desenvolvimento 100% via IA. O objetivo é apresentar uma alternativa produtiva e elegante às stacks complexas de frontend, focando em flexibilidade, utility-first approach e compatibilidade total com ferramentas de inteligência artificial.
 
 ---
 
@@ -19,7 +19,7 @@ Este projeto é um **protótipo funcional completo** que demonstra uma stack Rai
   - **Turbo Frames** - Atualizações parciais de página
   - **Turbo Streams** - Updates em tempo real via WebSockets
 - **Stimulus** - Framework JavaScript minimalista e declarativo
-- **Bootstrap 5.3.2** - Sistema de componentes responsivos
+- **TailwindCSS** - Framework utility-first para design flexível
 
 ### **Bibliotecas JavaScript Modernas**
 - **Chart.js 4.4.0** - Gráficos interativos avançados
