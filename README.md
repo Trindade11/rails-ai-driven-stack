@@ -1,14 +1,15 @@
-# 🚀 Protótipo Rails Moderno - Stack 100% IA-Friendly
+# 🚀 Protótipo Rails Moderno - Stack 100% IA-Friendly (TailwindCSS)
 
-Este é um **protótipo funcional** que demonstra exatamente como seria uma aplicação usando a stack Rails 8 + Hotwire + Turbo + Stimulus + Bootstrap discutida na conversa.
+Este é um **protótipo funcional** que demonstra exatamente como seria uma aplicação usando a stack Rails 8 + Hotwire + Turbo + Stimulus + **TailwindCSS** discutida na conversa.
 
 ## 🎯 Por que esta Stack?
 
-✅ **100% prompt-friendly** - Toda interação pode ser gerada via IA  
-✅ **Visual bacana** sem complexidade de build  
-✅ **Zero configuração** de front-end separado  
-✅ **Produtividade máxima** - tudo em um projeto só  
-✅ **Manutenção simples** - menos dependências, menos problemas  
+✅ **100% prompt-friendly** - Classes utilitárias descritivas para IA  
+✅ **Utility-first** - Controle granular sobre cada elemento  
+✅ **Zero configuração** de build complexo  
+✅ **Produtividade máxima** - Customização direta via classes  
+✅ **Bundle otimizado** - Apenas CSS usado é incluído  
+✅ **Flexibilidade total** - Design sem limitações de componentes  
 
 ## 🔧 Como Visualizar
 
@@ -19,10 +20,10 @@ Este é um **protótipo funcional** que demonstra exatamente como seria uma apli
 ## 🎨 O que você verá:
 
 ### 📱 **Interface Moderna**
-- Design responsivo com Bootstrap 5.3
-- Gradientes e animações suaves
+- Design responsivo com TailwindCSS utility-first
+- Gradientes customizados e animações suaves
 - Tema claro/escuro (botão no navbar)
-- Cards com hover effects
+- Cards com glassmorphism e hover effects
 
 ### ⚡ **Interatividade (Stimulus-like)**
 - **Botão "Ver Demo Interativo"** - demonstra ações automáticas
@@ -67,11 +68,11 @@ O HTML usa exatamente a mesma sintaxe que o Stimulus usa no Rails:
 - `data-action="evento->controller#metodo"`
 - `data-target="controller.alvo"`
 
-### 2. **Bootstrap Integrado**
-Visual bonito sem CSS customizado complexo:
-- Sistema de grid responsivo
-- Componentes prontos (cards, modais, toasts)
-- Ícones Bootstrap integrados
+### 2. **TailwindCSS Integrado**
+Visual bonito com classes utilitárias poderosas:
+- Sistema de grid flexível e responsivo
+- Utility-first approach para customização total
+- Design system altamente configurável
 
 ### 3. **Demonstração de Casos Reais**
 - Dashboard com métricas
@@ -115,13 +116,13 @@ end
 ```erb
 <%= content_for :title, "Dashboard" %>
 
-<section class="hero-section">
-  <div class="container">
-    <h1 class="display-4">Dashboard</h1>
+<section class="relative pt-24 pb-12 bg-gradient-primary">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-5xl font-bold text-white mb-6">Dashboard</h1>
     <%= button_to "Atualizar Dados", 
         dashboard_path, 
         method: :patch,
-        class: "btn btn-primary",
+        class: "px-8 py-4 bg-white text-purple-600 font-semibold rounded-xl hover:bg-gray-100 transition-all",
         data: { 
           controller: "turbo",
           action: "click->turbo#refresh"
@@ -158,17 +159,17 @@ Para implementar isso realmente no Rails:
 
 1. **Instalar Ruby/Rails**:
    ```bash
-   # Windows (via RubyInstaller)
+   # Instalar Rails com TailwindCSS
    gem install rails
-   rails new meu_projeto --css=bootstrap
+   rails new meu_projeto --css=tailwind
    ```
 
 2. **Prompt para IA** (exato):
    ```
-   "Crie um dashboard Rails com Bootstrap usando Hotwire, 
-   com cards de métricas animados, gráfico Chart.js responsivo, 
-   tema dark/light com Stimulus, e notificações toast. 
-   Use gradientes modernos e animações suaves."
+   "Crie um dashboard Rails com TailwindCSS usando Hotwire, 
+   com cards glassmorphism animados, gráfico Chart.js responsivo, 
+   tema dark/light com Stimulus, e notificações premium. 
+   Use utility classes, gradientes customizados e animações suaves."
    ```
 
 3. **Resultado**: Interface idêntica a este protótipo, mas funcionando de verdade!
